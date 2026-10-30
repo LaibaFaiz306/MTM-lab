@@ -1,0 +1,53 @@
+pipeline {
+  agent any   // needs docker + kubectl installed on the agent
+
+  environment {
+    REGISTRY   = 'YOUR_DOCKERHUB_USERNAME'          // <-- change
+    IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    NAMESPACE  = 'mtm-gdg'
+  }
+
+  stages {
+    stage('Build images') {
+      steps {
+        sh '''
+          docker build -t $REGISTRY/mtm-gdg-backend:$IMAGE_TAG  backend
+          docker build -t $REGISTRY/mtm-gdg-frontend:$IMAGE_TAG frontend
+        '''
+      }
+    }
+
+    stage('Push images') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                         usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+          sh '''
+            echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+            docker push $REGISTRY/mtm-gdg-backend:$IMAGE_TAG
+            docker push $REGISTRY/mtm-gdg-frontend:$IMAGE_TAG
+          '''
+        }
+      }
+    }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+          sh '''
+            sed -i "s|DOCKER_REGISTRY|$REGISTRY|g; s|IMAGE_TAG|$IMAGE_TAG|g" k8s/20-backend.yaml k8s/30-frontend.yaml
+            kubectl apply -f k8s/00-namespace.yaml
+            kubectl apply -f k8s/
+            kubectl -n $NAMESPACE rollout status deploy/postgres  --timeout=180s
+            kubectl -n $NAMESPACE rollout status deploy/backend   --timeout=180s
+            kubectl -n $NAMESPACE rollout status deploy/frontend  --timeout=180s
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo 'Deployed. Open http://<node-ip>:30080' }
+    failure { echo 'Deploy failed. Check the stage logs above.' }
+  }
+}

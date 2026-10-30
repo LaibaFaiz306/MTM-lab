@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MTM GDG Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f9fc; --ink:#14181f; --muted:#5b6575; --card:#ffffff; --line:#dfe5ee;
+  --blue:#4285f4; --red:#ea4335; --yellow:#fbbc04; --green:#34a853;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#10141a;--ink:#eef2f8;--muted:#9aa5b5;--card:#181e27;--line:#2a323f}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'Instrument Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.1;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header{padding:20px 0;display:flex;justify-content:space-between;align-items:center}
+.brand{font-family:'Bricolage Grotesque';font-weight:800;font-size:20px}
+.brand i{font-style:normal}
+.brand .b{color:var(--blue)}.brand .r{color:var(--red)}.brand .y{color:var(--yellow)}.brand .g{color:var(--green)}
+button,input,textarea{font:inherit;color:inherit}
+.link{background:none;border:0;color:var(--muted);cursor:pointer;text-decoration:underline}
+.hero{padding:56px 0 40px}
+.hero h1{font-size:clamp(44px,9vw,92px);font-weight:800;letter-spacing:-.03em}
+.hero h1 .l{color:var(--blue)}.hero h1 .rr{color:var(--green)}
+.hero p{max-width:52ch;color:var(--muted);font-size:19px;margin:20px 0 0}
+.bar{display:flex;height:6px;margin-top:36px;border-radius:3px;overflow:hidden}
+.bar span{flex:1}
+.events{display:grid;gap:16px;padding:40px 0}
+.event{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;grid-template-columns:110px 1fr auto;gap:24px;align-items:center;border-left:6px solid var(--blue)}
+.event:nth-child(4n+2){border-left-color:var(--red)}
+.event:nth-child(4n+3){border-left-color:var(--yellow)}
+.event:nth-child(4n+4){border-left-color:var(--green)}
+.date{font-family:'Bricolage Grotesque';font-weight:800;font-size:44px;line-height:1}
+.date small{display:block;font-size:15px;font-weight:500;color:var(--muted)}
+.event h3{font-size:24px}
+.meta{color:var(--muted);font-size:14px;margin-top:4px}
+.event p{margin:8px 0 0}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:11px 22px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:28px;width:min(440px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-weight:600;margin:14px 0 4px;font-size:14px}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.row{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.msg{margin-top:12px;font-size:14px;min-height:20px}
+.err{color:var(--red)}.ok{color:var(--green)}
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+.admin{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:40px}
+.admin[hidden],.adm[hidden]{display:none}
+.admin .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.admin table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+.admin td,.admin th{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+footer{padding:30px 0 50px;color:var(--muted);font-size:14px}
+@media(max-width:640px){.event{grid-template-columns:1fr}.admin .grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:no-preference){.hero h1{animation:in .6s ease-out both}@keyframes in{from{opacity:0;transform:translateY(12px)}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i class="b">&lt;</i><i class="r">M</i><i class="y">T</i><i class="g">M</i> GDG<i class="b">&gt;</i></div>
+    <button class="link" id="adminToggle">Organizer login</button>
+  </header>
+
+  <section class="hero">
+    <h1><span class="l">&lt;</span>Build<br>together<span class="rr">&gt;</span></h1>
+    <p>Workshops, study jams and talks from the MTM Google Developer Group. Pick an event and save your seat.</p>
+    <div class="bar"><span style="background:var(--blue)"></span><span style="background:var(--red)"></span><span style="background:var(--yellow)"></span><span style="background:var(--green)"></span></div>
+  </section>
+
+  <section class="admin" id="admin" hidden>
+    <h2 style="font-size:26px">Organizer panel</h2>
+    <label for="token">Admin token</label>
+    <input id="token" type="password" placeholder="Token from your Kubernetes secret">
+    <form id="newEvent" style="margin-top:8px">
+      <div class="grid">
+        <div><label for="t">Title</label><input id="t" required></div>
+        <div><label for="v">Venue</label><input id="v"></div>
+        <div><label for="d">Date and time</label><input id="d" type="datetime-local" required></div>
+        <div><label for="c">Capacity</label><input id="c" type="number" value="100" min="1"></div>
+      </div>
+      <label for="desc">Description</label><textarea id="desc" rows="2"></textarea>
+      <div class="row"><button class="btn" type="submit">Publish event</button></div>
+      <div class="msg" id="adminMsg"></div>
+    </form>
+    <div id="regs"></div>
+  </section>
+
+  <main class="events" id="events" aria-live="polite"></main>
+  <footer>MTM GDG Event Manager</footer>
+</div>
+
+<dialog id="reg">
+  <form id="regForm" method="dialog">
+    <h2 id="regTitle" style="font-size:26px"></h2>
+    <label for="rn">Full name</label><input id="rn" required>
+    <label for="re">Email</label><input id="re" type="email" required>
+    <div class="msg" id="regMsg"></div>
+    <div class="row">
+      <button class="btn sec" type="button" id="regCancel">Close</button>
+      <button class="btn" type="submit">Register</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let events = [], current = null;
+
+async function load() {
+  try {
+    events = await (await fetch('/api/events')).json();
+  } catch { $('#events').innerHTML = '<div class="empty">Could not reach the server. Try again in a moment.</div>'; return; }
+  if (!events.length) { $('#events').innerHTML = '<div class="empty">No events yet. Organizers can publish the first one above.</div>'; return; }
+  const adminOpen = !$('#admin').hidden;
+  $('#events').innerHTML = events.map(e => {
+    const d = new Date(e.starts_at), left = e.capacity - e.registered;
+    return `<article class="event">
+      <div class="date">${d.getDate()}<small>${d.toLocaleString('en',{month:'short'})} ${d.getFullYear()}</small></div>
+      <div><h3>${esc(e.title)}</h3>
+        <div class="meta">${d.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'})} · ${esc(e.venue || 'Venue to be announced')} · ${left > 0 ? left + ' seats left' : 'Full'}</div>
+        <p>${esc(e.description)}</p></div>
+      <div><button class="btn" data-reg="${e.id}" ${left<=0?'disabled':''}>${left>0?'Save my seat':'Full'}</button>
+      <button class="link adm" data-view="${e.id}" ${adminOpen?'':'hidden'}>Manage</button></div>
+    </article>`;
+  }).join('');
+}
+
+$('#events').addEventListener('click', async ev => {
+  const reg = ev.target.dataset.reg, view = ev.target.dataset.view;
+  if (reg) { current = events.find(e => e.id == reg); $('#regTitle').textContent = current.title; $('#regMsg').textContent = ''; $('#reg').showModal(); }
+  if (view) {
+    const r = await fetch(`/api/events/${view}/registrations`, { headers: { 'x-admin-token': $('#token').value } });
+    const data = await r.json();
+    $('#adminMsg').className = 'msg err';
+    if (!r.ok) { $('#adminMsg').textContent = data.error; return; }
+    $('#adminMsg').textContent = '';
+    const del = `<div class="row"><button class="btn sec" id="delEv" data-id="${view}">Delete this event</button></div>`;
+    $('#regs').innerHTML = `<h3 style="margin-top:20px">Registrations (${data.length})</h3>` +
+      (data.length ? `<table><tr><th>Name</th><th>Email</th></tr>${data.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.email)}</td></tr>`).join('')}</table>` :
+      `<p class="meta">No one has registered yet.</p>`) + del;
+    $('#admin').scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+$('#regs').addEventListener('click', async ev => {
+  if (ev.target.id !== 'delEv') return;
+  if (!confirm('Delete this event and its registrations?')) return;
+  await fetch(`/api/events/${ev.target.dataset.id}`, { method: 'DELETE', headers: { 'x-admin-token': $('#token').value } });
+  $('#regs').innerHTML = ''; load();
+});
+
+$('#regForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const r = await fetch(`/api/events/${current.id}/register`, { method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name: $('#rn').value, email: $('#re').value }) });
+  const data = await r.json();
+  $('#regMsg').className = 'msg ' + (r.ok ? 'ok' : 'err');
+  $('#regMsg').textContent = r.ok ? 'You are registered. See you there!' : data.error;
+  if (r.ok) { $('#regForm').reset(); load(); }
+});
+$('#regCancel').onclick = () => $('#reg').close();
+
+$('#adminToggle').onclick = () => {
+  const a = $('#admin'); a.hidden = !a.hidden;
+  document.querySelectorAll('.adm').forEach(b => b.hidden = a.hidden);
+};
+
+$('#newEvent').addEventListener('submit', async e => {
+  e.preventDefault();
+  const r = await fetch('/api/events', { method: 'POST', headers: {'Content-Type':'application/json','x-admin-token':$('#token').value},
+    body: JSON.stringify({ title:$('#t').value, venue:$('#v').value, description:$('#desc').value,
+      starts_at:new Date($('#d').value).toISOString(), capacity:+$('#c').value }) });
+  const data = await r.json();
+  $('#adminMsg').className = 'msg ' + (r.ok ? 'ok' : 'err');
+  $('#adminMsg').textContent = r.ok ? 'Event published.' : data.error;
+  if (r.ok) { $('#newEvent').reset(); load(); }
+});
+load();
+</script>
+</body>
+</html>
